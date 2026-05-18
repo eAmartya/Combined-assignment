@@ -14,4 +14,5 @@
 
 function batchProcess(items, limit, worker, onComplete) {}
 
+//must be solved with callback hell
 module.exports = batchProcess;

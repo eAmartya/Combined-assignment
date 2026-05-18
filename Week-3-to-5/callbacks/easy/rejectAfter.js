@@ -6,8 +6,9 @@
 // with an error.
 
 function rejectAfter(ms, callback) {
-
+  setTimeout(() => {
+    callback(new Error("Ran out of time"));
+  }, ms);
 }
 
 module.exports = rejectAfter;
-

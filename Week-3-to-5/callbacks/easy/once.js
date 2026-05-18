@@ -5,9 +5,24 @@
 // The wrapper should ensure that `fn` is executed only on the first call.
 // Any subsequent calls should not re-execute `fn` and should instead invoke
 // the callback with the same result (or error) from the first invocation.
-
-function once(fn) {
-
+let hasTheFnRanOnce = false;
+let response = { data: "", err: "" };
+function once(fn, cb) {
+  if (!hasTheFnRanOnce) {
+    try {
+      cb(null, data);
+      response.data = data;
+      response.err = null;
+    } catch (error) {
+      cb(err, null);
+      response.data = data;
+      response.err = null;
+    } finally {
+      hasTheFnRanOnce = true;
+    }
+  } else {
+    cb(response.err, response.data);
+  }
 }
 
 module.exports = once;

@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lumina — Flashcard Learning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0e0d;
+    --surface: #1a1917;
+    --surface-2: #232220;
+    --border: rgba(255,255,255,0.08);
+    --border-hover: rgba(255,255,255,0.16);
+    --cream: #f0e8d8;
+    --cream-muted: rgba(240,232,216,0.55);
+    --cream-dim: rgba(240,232,216,0.3);
+    --gold: #c9a84c;
+    --gold-muted: rgba(201,168,76,0.2);
+    --gold-bright: #e0bc6e;
+    --green: #4a9e6e;
+    --green-bg: rgba(74,158,110,0.15);
+    --red: #c05050;
+    --red-bg: rgba(192,80,80,0.15);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --ff-serif: 'Playfair Display', Georgia, serif;
+    --ff-sans: 'DM Sans', system-ui, sans-serif;
+  }
+
+  html, body {
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--cream);
+    font-family: var(--ff-sans);
+    font-weight: 400;
+    line-height: 1.6;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+  }
+
+  /* --- HEADER --- */
+  header {
+    width: 100%;
+    max-width: 900px;
+    padding: 2.5rem 2rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    font-family: var(--ff-serif);
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--cream);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--gold);
+    flex-shrink: 0;
+  }
+
+  .header-badge {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid rgba(201,168,76,0.35);
+    padding: 5px 12px;
+    border-radius: 100px;
+  }
+
+  /* --- MAIN CONTAINER --- */
+  main {
+    width: 100%;
+    max-width: 900px;
+    padding: 2rem;
+    flex: 1;
+  }
+
+  /* --- SCREENS --- */
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeUp 0.45s cubic-bezier(0.22,1,0.36,1) both; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ====== SETUP SCREEN ====== */
+  .setup-hero {
+    text-align: center;
+    padding: 3rem 0 3.5rem;
+  }
+
+  .setup-hero h1 {
+    font-family: var(--ff-serif);
+    font-size: clamp(2.4rem, 5vw, 3.5rem);
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--cream);
+    margin-bottom: 1rem;
+  }
+
+  .setup-hero h1 span {
+    color: var(--gold-bright);
+  }
+
+  .setup-hero p {
+    font-size: 1rem;
+    color: var(--cream-muted);
+    max-width: 380px;
+    margin: 0 auto;
+    font-weight: 300;
+  }
+
+  /* Topics grid */
+  .section-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--cream-dim);
+    margin-bottom: 1rem;
+  }
+
+  .topics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+    gap: 12px;
+    margin-bottom: 2.5rem;
+  }
+
+  .topic-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1.1rem 1.25rem;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, transform 0.18s;
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  .topic-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gold-muted);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .topic-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+  .topic-card:hover::before { opacity: 0.4; }
+
+  .topic-card.selected {
+    border-color: var(--gold);
+    background: var(--surface);
+  }
+  .topic-card.selected::before { opacity: 1; }
+
+  .topic-icon {
+    font-size: 1.6rem;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  .topic-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--cream);
+    display: block;
+  }
+
+  .topic-count {
+    font-size: 0.75rem;
+    color: var(--cream-dim);
+    margin-top: 2px;
+    display: block;
+  }
+
+  .topic-card.selected .topic-name { color: var(--gold-bright); }
+  .topic-card.selected .topic-count { color: rgba(201,168,76,0.6); }
+
+  /* Count selector */
+  .count-section {
+    margin-bottom: 2.5rem;
+  }
+
+  .count-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .count-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--cream);
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s, background 0.2s;
+    flex-shrink: 0;
+  }
+  .count-btn:hover { border-color: var(--gold); background: var(--gold-muted); color: var(--gold-bright); }
+
+  .count-display {
+    font-family: var(--ff-serif);
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--gold-bright);
+    min-width: 48px;
+    text-align: center;
+  }
+
+  .count-label {
+    font-size: 0.875rem;
+    color: var(--cream-muted);
+    font-weight: 300;
+  }
+
+  /* Start btn */
+  .btn-start {
+    width: 100%;
+    padding: 1rem 2rem;
+    border-radius: var(--radius-sm);
+    background: var(--gold);
+    border: none;
+    color: #1a1610;
+    font-family: var(--ff-sans);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    letter-spacing: 0.02em;
+  }
+  .btn-start:hover { background: var(--gold-bright); transform: translateY(-1px); }
+  .btn-start:active { transform: translateY(0); }
+  .btn-start:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* ====== QUIZ SCREEN ====== */
+  .quiz-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+
+  .quiz-topic-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .quiz-counter {
+    font-size: 0.85rem;
+    color: var(--cream-muted);
+  }
+
+  /* Progress bar */
+  .progress-bar-track {
+    width: 100%;
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 2.5rem;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--gold);
+    border-radius: 2px;
+    transition: width 0.4s cubic-bezier(0.22,1,0.36,1);
+  }
+
+  /* Flashcard */
+  .card-scene {
+    perspective: 1000px;
+    width: 100%;
+    max-width: 620px;
+    margin: 0 auto 2rem;
+    height: 340px;
+    cursor: pointer;
+  }
+
+  @media (max-width: 600px) {
+    .card-scene { height: 280px; }
+  }
+
+  .card-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.22,1,0.36,1);
+  }
+
+  .card-inner.flipped { transform: rotateY(180deg); }
+
+  .card-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .card-front {
+    background: var(--surface);
+  }
+
+  .card-back {
+    background: var(--surface-2);
+    transform: rotateY(180deg);
+    border-color: rgba(201,168,76,0.2);
+  }
+
+  .card-tag {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--cream-dim);
+    margin-bottom: 1.25rem;
+  }
+
+  .card-back .card-tag { color: rgba(201,168,76,0.5); }
+
+  .card-question {
+    font-family: var(--ff-serif);
+    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+    font-weight: 500;
+    color: var(--cream);
+    line-height: 1.4;
+    max-width: 440px;
+  }
+
+  .card-answer {
+    font-family: var(--ff-serif);
+    font-size: clamp(1rem, 2.2vw, 1.35rem);
+    font-weight: 400;
+    color: var(--gold-bright);
+    line-height: 1.4;
+    max-width: 440px;
+  }
+
+  .flip-hint {
+    position: absolute;
+    bottom: 1.25rem;
+    right: 1.5rem;
+    font-size: 11px;
+    color: var(--cream-dim);
+    letter-spacing: 0.06em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .flip-icon {
+    width: 16px;
+    height: 16px;
+    opacity: 0.5;
+  }
+
+  /* Answer buttons */
+  .answer-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    max-width: 620px;
+    margin: 0 auto 1.5rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s 0.15s;
+  }
+
+  .answer-btns.visible { opacity: 1; pointer-events: auto; }
+
+  .btn-answer {
+    padding: 0.85rem 1rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid;
+    font-family: var(--ff-sans);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.18s, transform 0.15s;
+    letter-spacing: 0.01em;
+  }
+
+  .btn-correct {
+    background: var(--green-bg);
+    border-color: rgba(74,158,110,0.4);
+    color: #6ecb91;
+  }
+  .btn-correct:hover { background: rgba(74,158,110,0.25); transform: translateY(-1px); }
+
+  .btn-incorrect {
+    background: var(--red-bg);
+    border-color: rgba(192,80,80,0.4);
+    color: #d97474;
+  }
+  .btn-incorrect:hover { background: rgba(192,80,80,0.25); transform: translateY(-1px); }
+
+  .flip-prompt {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--cream-dim);
+    letter-spacing: 0.04em;
+    max-width: 620px;
+    margin: 0 auto;
+    transition: opacity 0.25s;
+  }
+
+  /* ====== RESULTS SCREEN ====== */
+  .results-wrap {
+    max-width: 620px;
+    margin: 0 auto;
+    padding: 2rem 0;
+  }
+
+  .results-hero {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .score-ring {
+    width: 140px;
+    height: 140px;
+    margin: 0 auto 1.5rem;
+    position: relative;
+  }
+
+  .score-ring svg {
+    transform: rotate(-90deg);
+  }
+
+  .score-ring-bg {
+    fill: none;
+    stroke: var(--border);
+    stroke-width: 8;
+  }
+
+  .score-ring-fill {
+    fill: none;
+    stroke: var(--gold);
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-dasharray: 345;
+    stroke-dashoffset: 345;
+    transition: stroke-dashoffset 1.2s cubic-bezier(0.22,1,0.36,1) 0.3s;
+  }
+
+  .score-ring-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .score-pct {
+    font-family: var(--ff-serif);
+    font-size: 2.2rem;
+    font-weight: 600;
+    color: var(--gold-bright);
+    line-height: 1;
+  }
+
+  .score-sub {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--cream-dim);
+    margin-top: 4px;
+  }
+
+  .results-title {
+    font-family: var(--ff-serif);
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--cream);
+    margin-bottom: 0.5rem;
+  }
+
+  .results-subtitle {
+    font-size: 0.9rem;
+    color: var(--cream-muted);
+    font-weight: 300;
+  }
+
+  /* Stats row */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1.1rem 1rem;
+    text-align: center;
+  }
+
+  .stat-val {
+    font-family: var(--ff-serif);
+    font-size: 1.6rem;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 3px;
+  }
+
+  .stat-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--cream-dim);
+    display: block;
+  }
+
+  .stat-card.correct .stat-val { color: #6ecb91; }
+  .stat-card.incorrect .stat-val { color: #d97474; }
+  .stat-card.total .stat-val { color: var(--gold-bright); }
+
+  /* Review list */
+  .review-heading {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--cream-dim);
+    margin-bottom: 1rem;
+  }
+
+  .review-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 2.5rem;
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  .review-list::-webkit-scrollbar { width: 3px; }
+  .review-list::-webkit-scrollbar-track { background: transparent; }
+  .review-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .review-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.85rem 1rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .review-indicator {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+  }
+
+  .review-indicator.correct { background: var(--green-bg); color: #6ecb91; border: 1px solid rgba(74,158,110,0.35); }
+  .review-indicator.incorrect { background: var(--red-bg); color: #d97474; border: 1px solid rgba(192,80,80,0.35); }
+
+  .review-q { font-size: 0.82rem; color: var(--cream); line-height: 1.5; }
+  .review-a { font-size: 0.78rem; color: var(--cream-muted); margin-top: 2px; }
+
+  /* Footer btns */
+  .results-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .btn-secondary {
+    padding: 0.9rem 1.5rem;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    border: 1px solid var(--border-hover);
+    color: var(--cream-muted);
+    font-family: var(--ff-sans);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+    letter-spacing: 0.01em;
+  }
+  .btn-secondary:hover { border-color: var(--cream-dim); color: var(--cream); }
+
+  .btn-primary {
+    padding: 0.9rem 1.5rem;
+    border-radius: var(--radius-sm);
+    background: var(--gold);
+    border: none;
+    color: #1a1610;
+    font-family: var(--ff-sans);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    letter-spacing: 0.02em;
+  }
+  .btn-primary:hover { background: var(--gold-bright); transform: translateY(-1px); }
+
+  /* Decorative divider */
+  .divider {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold-muted), transparent);
+    margin: 2rem auto;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-dot"></span>
+    Lumina
+  </div>
+  <span class="header-badge">Flashcards</span>
+</header>
+
+<main>
+
+  <!-- ======== SETUP SCREEN ======== -->
+  <div class="screen active" id="screen-setup">
+    <div class="setup-hero">
+      <h1>Learn something<br /><span>remarkable</span> today.</h1>
+      <p>Choose a topic, set your pace, and master it one card at a time.</p>
+    </div>
+
+    <p class="section-label">Choose a topic</p>
+    <div class="topics-grid" id="topics-grid"></div>
+
+    <div class="count-section">
+      <p class="section-label">Number of questions</p>
+      <div class="count-row">
+        <button class="count-btn" id="count-dec" aria-label="Decrease">−</button>
+        <span class="count-display" id="count-display">5</span>
+        <button class="count-btn" id="count-inc" aria-label="Increase">+</button>
+        <span class="count-label">cards per session</span>
+      </div>
+    </div>
+
+    <button class="btn-start" id="btn-start" disabled>Select a topic to begin</button>
+  </div>
+
+  <!-- ======== QUIZ SCREEN ======== -->
+  <div class="screen" id="screen-quiz">
+    <div class="quiz-topbar">
+      <span class="quiz-topic-label" id="quiz-topic-label">—</span>
+      <span class="quiz-counter" id="quiz-counter">1 / 5</span>
+    </div>
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+
+    <div class="card-scene" id="card-scene" role="button" tabindex="0" aria-label="Flip card">
+      <div class="card-inner" id="card-inner">
+        <div class="card-face card-front">
+          <span class="card-tag">Question</span>
+          <p class="card-question" id="card-question">Loading…</p>
+          <span class="flip-hint">
+            <svg class="flip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 .49-4.41"/></svg>
+            click to reveal
+          </span>
+        </div>
+        <div class="card-face card-back">
+          <span class="card-tag">Answer</span>
+          <p class="card-answer" id="card-answer">—</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="answer-btns" id="answer-btns">
+      <button class="btn-answer btn-incorrect" id="btn-incorrect">✗ &nbsp; Got it wrong</button>
+      <button class="btn-answer btn-correct" id="btn-correct">✓ &nbsp; Got it right</button>
+    </div>
+
+    <p class="flip-prompt" id="flip-prompt">Flip the card to reveal the answer, then mark your response.</p>
+  </div>
+
+  <!-- ======== RESULTS SCREEN ======== -->
+  <div class="screen" id="screen-results">
+    <div class="results-wrap">
+      <div class="results-hero">
+        <div class="score-ring">
+          <svg viewBox="0 0 120 120" width="140" height="140">
+            <circle class="score-ring-bg" cx="60" cy="60" r="55" />
+            <circle class="score-ring-fill" id="score-ring-fill" cx="60" cy="60" r="55" />
+          </svg>
+          <div class="score-ring-text">
+            <span class="score-pct" id="score-pct">0%</span>
+            <span class="score-sub">Score</span>
+          </div>
+        </div>
+        <h2 class="results-title" id="results-title">Well done!</h2>
+        <p class="results-subtitle" id="results-subtitle">Here's how you performed.</p>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card total">
+          <span class="stat-val" id="stat-total">0</span>
+          <span class="stat-label">Total Cards</span>
+        </div>
+        <div class="stat-card correct">
+          <span class="stat-val" id="stat-correct">0</span>
+          <span class="stat-label">Correct</span>
+        </div>
+        <div class="stat-card incorrect">
+          <span class="stat-val" id="stat-incorrect">0</span>
+          <span class="stat-label">Incorrect</span>
+        </div>
+      </div>
+
+      <p class="review-heading">Card review</p>
+      <div class="review-list" id="review-list"></div>
+
+      <div class="results-btns">
+        <button class="btn-secondary" id="btn-new-topic">New Topic</button>
+        <button class="btn-primary" id="btn-retry">Try Again</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const TOPICS = [
+  {
+    id: 'science',
+    name: 'General Science',
+    icon: '🔬',
+    cards: [
+      { q: 'What is the powerhouse of the cell?', a: 'The mitochondria — responsible for producing ATP through cellular respiration.' },
+      { q: 'What is Newton\'s Second Law of Motion?', a: 'Force equals mass times acceleration (F = ma).' },
+      { q: 'What gas do plants absorb during photosynthesis?', a: 'Carbon dioxide (CO₂), which they convert into glucose using sunlight.' },
+      { q: 'What is the speed of light in a vacuum?', a: 'Approximately 299,792,458 metres per second (≈ 3 × 10⁸ m/s).' },
+      { q: 'What is the chemical formula for water?', a: 'H₂O — two hydrogen atoms bonded to one oxygen atom.' },
+      { q: 'What is DNA?', a: 'Deoxyribonucleic acid — a molecule that carries genetic information in all living organisms.' },
+      { q: 'What is the difference between a proton and a neutron?', a: 'Protons carry a positive charge; neutrons carry no charge. Both reside in the atomic nucleus.' },
+      { q: 'What is the theory of evolution?', a: 'Darwin\'s theory: species change over time via natural selection — traits that aid survival are passed on.' },
+    ]
+  },
+  {
+    id: 'history',
+    name: 'World History',
+    icon: '🏛️',
+    cards: [
+      { q: 'In what year did World War II end?', a: '1945 — Germany surrendered in May and Japan in September after the atomic bombings.' },
+      { q: 'Who was the first President of the United States?', a: 'George Washington, inaugurated on April 30, 1789.' },
+      { q: 'What was the Renaissance?', a: 'A cultural and intellectual movement in Europe (14th–17th century) that revived classical learning and fostered art and science.' },
+      { q: 'What caused the fall of the Roman Empire?', a: 'Multiple factors: political instability, economic troubles, military defeats, and pressure from migrating tribes.' },
+      { q: 'What was the French Revolution?', a: 'A period (1789–1799) of radical political change in France that abolished the monarchy and led to Napoleon\'s rise.' },
+      { q: 'What is the Magna Carta?', a: 'A 1215 charter that limited the English king\'s power and established the principle that everyone, including the king, is subject to law.' },
+      { q: 'Who was Cleopatra?', a: 'The last active ruler of the Ptolemaic Kingdom of Egypt, known for her alliances with Julius Caesar and Mark Antony.' },
+      { q: 'What was the Cold War?', a: 'A geopolitical rivalry (1947–1991) between the USA and USSR — ideological conflict without direct large-scale warfare.' },
+    ]
+  },
+  {
+    id: 'geography',
+    name: 'Geography',
+    icon: '🌍',
+    cards: [
+      { q: 'What is the largest continent by area?', a: 'Asia — covering about 44.6 million km², roughly 30% of Earth\'s total land area.' },
+      { q: 'What is the longest river in the world?', a: 'The Nile River in Africa, stretching approximately 6,650 km.' },
+      { q: 'How many countries are in the world?', a: '195 countries — 193 UN member states and 2 observer states (Vatican City and Palestine).' },
+      { q: 'What is the capital of Australia?', a: 'Canberra — often mistaken for Sydney, which is the largest city.' },
+      { q: 'Which ocean is the largest?', a: 'The Pacific Ocean, covering more than 165 million km² — about half of the world\'s ocean area.' },
+      { q: 'What is the tallest mountain on Earth?', a: 'Mount Everest in the Himalayas, at 8,848.86 metres above sea level.' },
+      { q: 'What is the smallest country in the world?', a: 'Vatican City, an independent city-state inside Rome covering just 0.44 km².' },
+      { q: 'Which desert is the largest in the world?', a: 'The Antarctic Desert — often overlooked, it\'s larger than the Sahara at ~14.2 million km².' },
+    ]
+  },
+  {
+    id: 'math',
+    name: 'Mathematics',
+    icon: '📐',
+    cards: [
+      { q: 'What is the Pythagorean theorem?', a: 'In a right triangle: a² + b² = c², where c is the hypotenuse.' },
+      { q: 'What is a prime number?', a: 'A natural number greater than 1 with no positive divisors other than 1 and itself (e.g., 2, 3, 5, 7).' },
+      { q: 'What is the value of π (pi)?', a: 'Approximately 3.14159 — the ratio of a circle\'s circumference to its diameter.' },
+      { q: 'What is the quadratic formula?', a: 'x = (−b ± √(b²−4ac)) / 2a, used to solve equations of the form ax² + bx + c = 0.' },
+      { q: 'What is a logarithm?', a: 'The inverse of exponentiation — log_b(x) = y means b^y = x.' },
+      { q: 'What is the sum of interior angles of a triangle?', a: 'Always 180 degrees, regardless of the triangle\'s shape.' },
+      { q: 'What does "factorial" mean?', a: 'n! is the product of all positive integers up to n. For example, 5! = 5×4×3×2×1 = 120.' },
+      { q: 'What is a vector?', a: 'A mathematical object with both magnitude and direction, often represented as an arrow or coordinate pair.' },
+    ]
+  },
+  {
+    id: 'tech',
+    name: 'Technology',
+    icon: '💻',
+    cards: [
+      { q: 'What does CPU stand for?', a: 'Central Processing Unit — the primary component that executes instructions in a computer.' },
+      { q: 'What is the difference between RAM and storage?', a: 'RAM is temporary fast memory for active processes; storage (SSD/HDD) holds data persistently.' },
+      { q: 'What is an algorithm?', a: 'A step-by-step procedure or set of rules to solve a specific problem or perform a computation.' },
+      { q: 'What is machine learning?', a: 'A branch of AI where systems learn from data and improve performance without being explicitly programmed.' },
+      { q: 'What is the Internet?', a: 'A global network of interconnected computers communicating via standardised protocols (TCP/IP).' },
+      { q: 'What is open-source software?', a: 'Software whose source code is publicly available, allowing anyone to use, modify, or distribute it.' },
+      { q: 'What does HTTP stand for?', a: 'HyperText Transfer Protocol — the foundation of data communication on the World Wide Web.' },
+      { q: 'What is a binary number system?', a: 'A base-2 system using only 0 and 1, which is the fundamental language of digital computers.' },
+    ]
+  },
+  {
+    id: 'language',
+    name: 'Language & Lit',
+    icon: '📖',
+    cards: [
+      { q: 'What is a metaphor?', a: 'A figure of speech that directly compares two unlike things without using "like" or "as" (e.g., "time is a thief").' },
+      { q: 'What is the difference between a simile and a metaphor?', a: 'A simile uses "like" or "as" for comparison; a metaphor states the comparison directly.' },
+      { q: 'Who wrote "Pride and Prejudice"?', a: 'Jane Austen, published in 1813.' },
+      { q: 'What is iambic pentameter?', a: 'A poetic meter with five iambic feet per line (an unstressed syllable followed by a stressed one) — used extensively by Shakespeare.' },
+      { q: 'What is the Odyssey?', a: 'An ancient Greek epic poem attributed to Homer, following Odysseus\'s journey home after the Trojan War.' },
+      { q: 'What is a protagonist?', a: 'The main character in a story, around whom the central conflict revolves.' },
+      { q: 'What is alliteration?', a: 'The repetition of the same initial consonant sound in nearby words (e.g., "Peter Piper picked a peck").' },
+      { q: 'What is a haiku?', a: 'A Japanese poem of three lines with a 5-7-5 syllable structure, often evoking nature or a moment in time.' },
+    ]
+  },
+];
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let selectedTopic = null;
+let questionCount = 5;
+let currentDeck = [];
+let currentIdx = 0;
+let isFlipped = false;
+let results = [];
+
+// ─── DOM REFS ─────────────────────────────────────────────────────────────────
+const screens = {
+  setup: document.getElementById('screen-setup'),
+  quiz:  document.getElementById('screen-quiz'),
+  results: document.getElementById('screen-results'),
+};
+
+function showScreen(name) {
+  Object.values(screens).forEach(s => s.classList.remove('active'));
+  screens[name].classList.add('active');
+}
+
+// ─── SETUP ────────────────────────────────────────────────────────────────────
+const topicsGrid = document.getElementById('topics-grid');
+
+TOPICS.forEach(topic => {
+  const card = document.createElement('div');
+  card.className = 'topic-card';
+  card.dataset.id = topic.id;
+  card.innerHTML = `
+    <span class="topic-icon">${topic.icon}</span>
+    <span class="topic-name">${topic.name}</span>
+    <span class="topic-count">${topic.cards.length} cards</span>
+  `;
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.topic-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    selectedTopic = topic;
+    document.getElementById('btn-start').disabled = false;
+    document.getElementById('btn-start').textContent = `Start with ${topic.name}`;
+  });
+  topicsGrid.appendChild(card);
+});
+
+const countDisplay = document.getElementById('count-display');
+document.getElementById('count-dec').addEventListener('click', () => {
+  if (questionCount > 3) { questionCount--; countDisplay.textContent = questionCount; }
+});
+document.getElementById('count-inc').addEventListener('click', () => {
+  if (selectedTopic && questionCount < selectedTopic.cards.length) {
+    questionCount++;
+    countDisplay.textContent = questionCount;
+  } else if (!selectedTopic && questionCount < 8) {
+    questionCount++;
+    countDisplay.textContent = questionCount;
+  }
+});
+
+document.getElementById('btn-start').addEventListener('click', startQuiz);
+
+// ─── QUIZ ────────────────────────────────────────────────────────────────────
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startQuiz() {
+  if (!selectedTopic) return;
+  currentDeck = shuffle(selectedTopic.cards).slice(0, questionCount);
+  currentIdx = 0;
+  results = [];
+  isFlipped = false;
+
+  document.getElementById('quiz-topic-label').textContent = selectedTopic.name;
+  showScreen('quiz');
+  renderCard();
+}
+
+function renderCard() {
+  const card = currentDeck[currentIdx];
+  const total = currentDeck.length;
+
+  document.getElementById('quiz-counter').textContent = `${currentIdx + 1} / ${total}`;
+  document.getElementById('progress-fill').style.width = `${(currentIdx / total) * 100}%`;
+  document.getElementById('card-question').textContent = card.q;
+  document.getElementById('card-answer').textContent = card.a;
+
+  // Reset flip
+  isFlipped = false;
+  const inner = document.getElementById('card-inner');
+  inner.classList.remove('flipped');
+
+  // Hide answer buttons
+  const answerBtns = document.getElementById('answer-btns');
+  answerBtns.classList.remove('visible');
+  document.getElementById('flip-prompt').style.opacity = '1';
+}
+
+// Flip logic
+const cardScene = document.getElementById('card-scene');
+cardScene.addEventListener('click', handleFlip);
+cardScene.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') handleFlip(); });
+
+function handleFlip() {
+  if (isFlipped) return;
+  isFlipped = true;
+  document.getElementById('card-inner').classList.add('flipped');
+  setTimeout(() => {
+    document.getElementById('answer-btns').classList.add('visible');
+    document.getElementById('flip-prompt').style.opacity = '0';
+  }, 300);
+}
+
+document.getElementById('btn-correct').addEventListener('click', () => recordAnswer(true));
+document.getElementById('btn-incorrect').addEventListener('click', () => recordAnswer(false));
+
+function recordAnswer(correct) {
+  results.push({ card: currentDeck[currentIdx], correct });
+  currentIdx++;
+  if (currentIdx >= currentDeck.length) {
+    showResults();
+  } else {
+    renderCard();
+  }
+}
+
+// ─── RESULTS ──────────────────────────────────────────────────────────────────
+function showResults() {
+  const total = results.length;
+  const correct = results.filter(r => r.correct).length;
+  const incorrect = total - correct;
+  const pct = Math.round((correct / total) * 100);
+
+  document.getElementById('score-pct').textContent = `${pct}%`;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-correct').textContent = correct;
+  document.getElementById('stat-incorrect').textContent = incorrect;
+
+  // Title
+  const titles = [
+    [0, 39, 'Keep practising!', 'Every mistake is a lesson. Review and try again.'],
+    [40, 69, 'Good effort!', 'You\'re making progress — a few more rounds will help.'],
+    [70, 89, 'Well done!', 'You have a solid grasp of the material.'],
+    [90, 100, 'Outstanding!', 'You\'ve truly mastered this topic. Excellent work.'],
+  ];
+  const [, , title, subtitle] = titles.find(([lo, hi]) => pct >= lo && pct <= hi) || titles[3];
+  document.getElementById('results-title').textContent = title;
+  document.getElementById('results-subtitle').textContent = subtitle;
+
+  // Progress fill animation
+  document.getElementById('progress-fill').style.width = '100%';
+
+  showScreen('results');
+
+  // Animate ring after screen transition
+  setTimeout(() => {
+    const circumference = 2 * Math.PI * 55;
+    const offset = circumference - (pct / 100) * circumference;
+    document.getElementById('score-ring-fill').style.strokeDashoffset = offset;
+  }, 100);
+
+  // Build review list
+  const list = document.getElementById('review-list');
+  list.innerHTML = '';
+  results.forEach(r => {
+    const item = document.createElement('div');
+    item.className = 'review-item';
+    item.innerHTML = `
+      <div class="review-indicator ${r.correct ? 'correct' : 'incorrect'}">${r.correct ? '✓' : '✗'}</div>
+      <div>
+        <p class="review-q">${r.card.q}</p>
+        <p class="review-a">${r.card.a}</p>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+}
+
+document.getElementById('btn-new-topic').addEventListener('click', () => {
+  selectedTopic = null;
+  document.querySelectorAll('.topic-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('btn-start').disabled = true;
+  document.getElementById('btn-start').textContent = 'Select a topic to begin';
+  document.getElementById('score-ring-fill').style.strokeDashoffset = 345;
+  showScreen('setup');
+});
+
+document.getElementById('btn-retry').addEventListener('click', () => {
+  document.getElementById('score-ring-fill').style.strokeDashoffset = 345;
+  startQuiz();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flashcard</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+      integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <style>
+      :root {
+        --bright--gold--color: #e0bc6e;
+        --dim: rgba(240, 232, 216, 0.3);
+        --surface: #1a1917;
+        --border--black: rgba(255, 255, 255, 0.08);
+        --answer-golden-bg: #232220;
+        --answer-golden-border: rgba(201, 168, 76, 0.2);
+        --bright-gold: #e0bc6e;
+      }
+      p {
+        margin: 0px;
+        padding: 0px;
+      }
+      .flex-center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .popup {
+        border: var(--bright--gold--color) 2px solid;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 30px;
+        right: 30px;
+        padding: 20px 40px;
+        transition: transform 1s;
+      }
+      .hidden {
+        display: none;
+      }
+      .uppercase {
+        text-transform: uppercase;
+      }
+      html {
+        background-color: #0f0e0d;
+        color: #f0e8d8;
+      }
+      button {
+        cursor: pointer;
+      }
+      .nav {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      body {
+        margin: 0px;
+        text-align: center;
+        transition: 0.3s;
+      }
+      .m0 {
+        margin: 0;
+      }
+      .gold {
+        color: #e0bc6e;
+      }
+      .dim {
+        color: rgba(240, 232, 216, 0.3);
+      }
+      .dmsans {
+        font-family: "DM Sans", system-ui, sans-serif;
+      }
+      .smallfontsize {
+        font-weight: 400;
+        font-size: 14px;
+      }
+      .playfair {
+        font-family: "Playfair Display", Georgia, serif;
+      }
+      .main h3 {
+        width: 50%;
+        font-weight: 400;
+        font-size: 16px;
+      }
+
+      section.no-of-cards {
+        margin: 30px 0px;
+      }
+      h1 {
+        font-family: "Playfair Display", Georgia, serif;
+        font-weight: 400;
+        font-size: 30px;
+      }
+      section.nav {
+        padding: 5px 20px;
+
+        /* border-bottom: 0.5px solid gray; */
+      }
+      .grid {
+        padding: 20px;
+        display: grid;
+        grid-template-columns: auto auto auto auto;
+        gap: 14px;
+      }
+      .subject-box {
+        padding: 10px;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        font-family: "DM Sans", system-ui, sans-serif;
+        padding: 20px;
+      }
+      .subject-box div {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .icon {
+        font-size: 30px;
+      }
+      .subject-box:hover {
+        background-color: rgba(201, 168, 76, 0.146);
+        transition: 0.3s;
+        transform: translateY(-10px);
+      }
+      .main {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .main h2 {
+        text-align: center;
+        width: 50%;
+        font-size: 48px;
+        font-family: "Playfair Display", Georgia, serif;
+      }
+      .left {
+        text-align: left;
+      }
+      .mainBtn {
+        display: flex;
+        justify-content: center;
+      }
+      #mainBtn {
+        width: 80%;
+        padding: 15px 20px;
+        border-radius: 12px;
+        border: none;
+        background-color: #e0bc6e;
+        font-size: 14px;
+        font-weight: 500;
+      }
+      #mainBtn:hover {
+        background-color: #fcc141;
+        transition: 0.3s;
+        transform: scale(1.01);
+      }
+      .control {
+        display: flex;
+        align-items: center;
+        justify-content: left;
+        gap: 20px;
+      }
+      .control button {
+        border-radius: 50%;
+        border: none;
+        padding: 13px;
+        background-color: #201d1b;
+        color: white;
+        margin: 0px 10px;
+        cursor: pointer;
+      }
+      .questions-count {
+        font-size: 30px;
+      }
+
+      .answered-card {
+        background-color: var(--answer-golden-bg);
+        border-color: var(--answer-golden-border);
+        border: 1px solid;
+      }
+      .unanswered-card {
+        background-color: var(--surface);
+        border-color: var(--border--black);
+        border: 1px solid;
+      }
+      .header {
+        display: flex;
+        flex-direction: column;
+      }
+      .header > div:first-child {
+        display: flex;
+        justify-content: space-between;
+      }
+      /* progress bar */
+      .progress-bar {
+        width: 100%;
+        border: gray 1px solid;
+        background-color: gray;
+      }
+      .progress-fill {
+        background-color: rgb(255, 242, 0);
+        width: 20%;
+        height: 1px;
+      }
+      .card-show {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+      }
+      .card {
+        margin: 40px 0px;
+        /* border: 1px solid gold; */
+        width: 60%;
+        min-height: 150px;
+        max-width: 450px;
+        padding: 100px;
+        border-radius: 12px;
+
+        /* background-color: #1a1917; */
+      }
+
+      .response-btns {
+        display: grid;
+        grid-template-columns: auto auto;
+        gap: 20px;
+        width: 60%;
+        transform: translate(0px, 10px);
+        transition: transform 1s;
+      }
+      .response-btns button {
+        padding: 15px 30px;
+        border-radius: 12px;
+        font-weight: 500;
+      }
+
+      #wrongBtn {
+        background-color: rgba(192, 80, 80, 0.15);
+        border-color: rgba(192, 80, 80, 0.4);
+        border: 1px solid;
+        color: #d97474;
+      }
+      #rightBtn {
+        color: #6ecb91;
+        background-color: rgba(74, 158, 110, 0.15);
+        border-color: rgba(74, 158, 110, 0.4);
+        border: 1px solid;
+      }
+      .card {
+        position: relative;
+        padding: 0px;
+      }
+
+      .flip {
+        transform: scale(1.1);
+      }
+
+      .questionForFlip,
+      .answerForFlip {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        margin: 0px;
+        padding: 0px;
+        backface-visibility: hidden;
+      }
+      .answerForFlip {
+        transform: rotateY(180deg);
+      }
+      .flipped {
+        transform: rotateY(180deg);
+      }
+      section.card-show > div:first-child {
+        /* border: 1px solid gold; */
+        position: relative;
+        /* display: flex; */
+        transform-style: preserve-3d;
+        transition: transform 1s;
+        margin: 40px 0px 20px 0px;
+        width: 100%;
+        min-height: 200px;
+        max-width: 450px;
+        padding: 30px;
+        border-radius: 12px;
+
+        background-color: #1a1917;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      span#questionTxt,
+      span#answerTxt {
+        margin: 20px;
+        display: block;
+      }
+      p#question,
+      p#answer {
+        padding: 30px;
+      }
+      .selected-subject {
+        border: 2px solid var(--bright--gold--color);
+        transform: translate(0px, -10px);
+      }
+      .not-active {
+        cursor: not-allowed;
+      }
+    </style>
+    <style>
+      section#resultScreen {
+        padding: 20px;
+      }
+      section#resultScreen > * {
+        margin: 30px 0px;
+      }
+      .circularScore {
+        border-radius: 50%;
+        min-width: 100px;
+        min-height: 100px;
+        width: 150px;
+        height: 150px;
+        max-width: 180px;
+        max-height: 180px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        /* border: 2px solid #f0e8d8; */
+        background-image: conic-gradient(
+          var(--bright--gold--color) 270deg,
+          #232220 0deg
+        );
+      }
+      .circularScoreChild {
+        border-radius: 50%;
+        min-width: 80px;
+        min-height: 80px;
+        width: 130px;
+        height: 130px;
+        max-width: 160px;
+        max-height: 160px;
+        background-color: #0f0e0d;
+        flex-direction: column;
+      }
+      .parent-score-box {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+      }
+      .parent-score-box div {
+        border-radius: 12px;
+        width: 200px;
+
+        max-width: 250px;
+        background-color: #1a1817;
+      }
+      .score-text {
+        font-size: 12px;
+      }
+      .score {
+        font-size: 24px;
+      }
+      .score-boxes {
+        padding: 15px;
+      }
+      .score-boxes p {
+        margin: 10px;
+      }
+      #cardReviewParent {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 65%;
+        max-width: 730px;
+        text-align: left;
+        max-height: 400px;
+      }
+      #cardReviewParent > div {
+        display: flex;
+        padding: 8px 15px;
+        align-items: center;
+        width: 100%;
+        background-color: #1a1817;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      #cardReviewParent p {
+        margin: 3px;
+        font-size: 14px;
+      }
+
+      #cardReviewParent span {
+        align-self: flex-start;
+
+        background-color: #0f0f0d;
+        padding: 4px;
+        font-size: 7px;
+        border-radius: 100%;
+        margin: 10px 8px;
+      }
+      .result-screen-btn-holder {
+        width: 100%;
+        padding: 20px;
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        align-items: center;
+      }
+      .result-screen-btn-holder button {
+        padding: 15px 60px;
+        border-radius: 12px;
+        font-weight: 500;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="popup hidden">lmao</div>
+    <section class="nav left">
+      <h1 class="playfair">Skye</h1>
+    </section>
+    <!-- ======== SETUP SCREEN ======== -->
+
+    <section style="padding: 32px" id="setupScreen">
+      <section class="main">
+        <h2>Learn something <span class="gold">remarkable</span> today</h2>
+        <h3 class="dmsans dim m0">
+          Choose a topic, set your pace, and master it one card at a time
+        </h3>
+      </section>
+      <section class="topic-selection" style="margin: 50px 0px">
+        <h3 class="left dim dmsans smallfontsize">CHOOSE A TOPIC</h3>
+        <div class="grid">
+          <div class="subject-box">
+            <span class="icon"> 🔬 </span>
+            <div>
+              Science
+              <span class="cards-count dim"> 8 cards </span>
+            </div>
+          </div>
+          <div class="subject-box">
+            <span class="icon"> 🏛️ </span>
+            <div>
+              History
+              <span class="cards-count dim"> 8 cards </span>
+            </div>
+          </div>
+          <div class="subject-box">
+            <span class="icon"> 🌍 </span>
+            <div>
+              Geography
+              <span class="cards-count dim"> 8 cards </span>
+            </div>
+          </div>
+          <div class="subject-box">
+            <span class="icon"> 📐 </span>
+            <div>
+              Mathematics
+              <span class="cards-count dim"> 8 cards </span>
+            </div>
+          </div>
+          <div class="subject-box">
+            <span class="icon"> 💻 </span>
+            <div>
+              Technology
+              <span class="cards-count dim"> 8 cards </span>
+            </div>
+          </div>
+          <div class="subject-box">
+            <span class="icon"> 📘 </span>
+            <div>
+              Language
+              <span class="cards-count dim"> 8 cards </span>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="no-of-cards left" style="margin: 30px 0px">
+        <h3 class="dmsans dim smallfontsize">NUMBER OF QUESTIONS</h3>
+        <div class="control">
+          <button id="minus">➖</button>
+          <span
+            class="questions-count gold playfair"
+            id="setupScreenHowManyCardsTheUserWantsToPractiseCount"
+          >
+            5
+          </span>
+          <button id="plus">➕</button>
+          <span class="dmsans dim" style="margin-left: -20px"
+            >cards per session</span
+          >
+        </div>
+      </section>
+      <div class="mainBtn" style="margin: 20px 0px; padding: 20px 0px">
+        <button id="mainBtn" class="dmsans">Select a topic to begin</button>
+      </div>
+    </section>
+    <!-- ======== QUIZ SCREEN ======== -->
+    <section style="padding: 32px" class="hidden" id="quizScreen">
+      <section class="header">
+        <div>
+          <p
+            id="cardName"
+            class="uppercase gold dmsans"
+            style="font-size: 14px"
+          >
+            Technology
+          </p>
+          <p
+            id="card-count"
+            class="dmsans dim"
+            style="
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              gap: 2px;
+              font-size: 12px;
+            "
+          >
+            <span id="currentCard">1</span>/
+            <span id="totalCard">5</span>
+          </p>
+        </div>
+
+        <div class="progress-bar">
+          <div class="progress-fill"></div>
+        </div>
+      </section>
+      <section class="card-show">
+        <div id="flipper">
+          <div class="questionForFlip">
+            <span
+              class="dim dmsans uppercase"
+              style="font-size: 12px"
+              id="questionTxt"
+              >Question</span
+            >
+            <p class="question playfair" id="question" style="font-size: 24px">
+              What is the difference between RAM and storage?
+            </p>
+          </div>
+          <div class="answerForFlip">
+            <span
+              class="dim dmsans uppercase"
+              style="font-size: 12px; color: rgba(201, 168, 76, 0.2)"
+              id="answerTxt"
+              >Answer</span
+            >
+            <p class="answer gold playfair" id="answer" style="font-size: 24px">
+              The mitrochondia is the powerhouse of the cell
+            </p>
+          </div>
+        </div>
+
+        <p id="instruction" class="dim dmsans" style="font-size: 12px">
+          Flip the card to reveal the answer, then mark your response.
+        </p>
+
+        <div class="response-btns dmsans">
+          <button id="wrongBtn">✕ Got it wrong</button
+          ><button id="rightBtn">✓ Got it right</button>
+        </div>
+      </section>
+    </section>
+    <!-- ======== RESULT SCREEN ======== -->
+    <section id="resultScreen" class="hidden">
+      <div class="flex-center">
+        <div class="circularScore" id="circularBar">
+          <div class="circularScoreChild flex-center">
+            <p
+              id="percentScored"
+              class="playfair gold"
+              style="font-size: 24px; margin: 5px"
+            >
+              100%
+            </p>
+            <span class="uppercase dim dmsans" style="font-size: 12px"
+              >Score</span
+            >
+          </div>
+        </div>
+      </div>
+      <h2 id="remarks" style="font-size: 32px; font-weight: 600">
+        Outstanding
+      </h2>
+      <h3
+        id="detailedRemarks"
+        class="dim dmsans"
+        style="font-size: 14px; font-weight: 400"
+      >
+        You've truly mastered this topic. Excellent work.
+      </h3>
+      <div class="parent-score-box playfair">
+        <div class="score-boxes">
+          <p class="score" id="resultTotalQuestions" style="color: #dbb86c">
+            3
+          </p>
+          <p class="dim uppercase dmsans score-text">Total Cards</p>
+        </div>
+        <div class="score-boxes">
+          <p class="score" id="resultCorrectScore" style="color: #6ecb91">1</p>
+          <p class="dim uppercase score-text dmsans">Correct</p>
+        </div>
+        <div class="score-boxes">
+          <p class="score" id="resultIncorrectScore" style="color: #d97474">
+            2
+          </p>
+          <p class="dim uppercase score-text dmsans">Incorrect</p>
+        </div>
+      </div>
+      <h3
+        class="dim uppercase dmsans"
+        style="font-size: 10px; font-weight: 300"
+      >
+        Card Review
+      </h3>
+      <div class="flex-center">
+        <div id="cardReviewParent" class="dmsans">
+          <!-- <div>
+            <span class="flex-center">✓</span>
+            <div>
+              <p>What planet is known as the Red Planet?</p>
+              <p class="dim">Mars</p>
+            </div>
+          </div> -->
+        </div>
+      </div>
+
+      <div class="result-screen-btn-holder dmsans">
+        <button
+          id="newTopicBtn"
+          style="
+            background-color: var(--bright--gold--color);
+            border: var(--bright-gold);
+          "
+        >
+          New Topic</button
+        ><button
+          id="tryAgainBtn"
+          style="
+            background-color: var(--surface);
+            border: 1px solid var(--border--black);
+            color: rgba(240, 232, 216, 0.55);
+          "
+        >
+          Try Again
+        </button>
+      </div>
+    </section>
+    <script src="index.js"></script>
+  </body>
+</html>
+
+<!-- all right now ig the only problem inside the quiz screen is to basically flip the card right, yeah that makes sense, how are we going to do that. i can recall that transition was for the timing and it takes what as an input as well, so what is being transitioned and what is the delay what sorta animation thingy ok that goes where in the parent card class, what is fliping. the card itself when flipped right.  -->
