@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recipie assignment</title>
+    <style>
+      body {
+        background-color: black;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+      }
+      p {
+        margin: 0px;
+        padding: 0px;
+      }
+      section#error {
+        position: fixed;
+        top: 0px;
+        left: 0px;
+      }
+      .error {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: rgb(248, 71, 71);
+        color: white;
+        font-size: 3rem;
+      }
+      .parent-category-card-holder {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .category-card {
+        cursor: pointer;
+        border: 1px solid rgb(29, 29, 29);
+        border-radius: 12px;
+        margin: 1rem;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background-color: rgb(23, 29, 39);
+        color: white;
+        font-family: sans-serif;
+        width: clamp(400px, 500px, 600px);
+      }
+
+      .category-recipie-image {
+        width: clamp(250px, 300px, 500px);
+      }
+      .name {
+        font-size: 1.4rem;
+        align-self: start;
+      }
+      .desc {
+        color: rgb(149, 146, 146);
+      }
+      .modal {
+        position: fixed;
+        top: 0px;
+        left: 0px;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      #modalBody {
+        min-width: 300px;
+        max-width: 800px;
+        max-height: 600px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        padding: 2rem;
+        border: 1px solid gold;
+        background-color: rgb(12, 12, 24);
+        color: white;
+        border-radius: 12px;
+      }
+      #modalBody img {
+        width: 50%;
+        /* height: 50%; */
+        overflow: hidden;
+      }
+      .hidden {
+        display: none;
+      }
+      button {
+        cursor: pointer;
+      }
+      a {
+        color: white;
+      }
+      #modalBody button {
+        padding: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="modal" class="modal hidden">
+      <div id="modalBody">
+        <img src="" alt="" />
+        <p>title of the modal</p>
+        <p>desc of the modal</p>
+        <button id="closeButton">Close</button>
+      </div>
+    </div>
+
+    <section id="error" class="hidden">Error</section>
+    <section id="categories">
+      <div class="parent-category-card-holder" id="parentCategoryCardHolder">
+        <!-- <div class="category-card">
+          <img src="" alt="" class="category-recipie-image" />
+          <p class="name">Name</p>
+          <p class="desc">Desc</p>
+        </div> -->
+        <!-- <div class="category-card">
+          <img
+            src="https://www.themealdb.com/images/category/beef.png"
+            alt=""
+            class="category-recipie-image"
+          />
+          <p class="name">Beef</p>
+          <p class="desc">
+            Beef is the culinary name for meat from cattle, particularly
+            skeletal muscle. Humans have been eating beef since prehistoric
+            times.[1] Beef is a source of high-quality protein and essential
+            nutrients.[2]
+          </p>
+        </div> -->
+      </div>
+    </section>
+    <section id="allMealsOfACategory" class="hidden"></section>
+
+    <script src="index.js"></script>
+  </body>
+</html>
